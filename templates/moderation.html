@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+
+{% block title %}Moderation - Silcas Bot{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4" style="color: #ffffff; font-weight: 700;"><i class="fas fa-gavel" style="color: #ff3333; margin-right: 10px;"></i> Moderation</h1>
+    
+    <!-- Direct User ID Actions -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-user-shield" style="color: #ff3333; margin-right: 8px;"></i> Direct User Actions
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-tabs" id="actionTabs" role="tablist" style="border-bottom: 2px solid #ff3333;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="unmute-unban-tab" data-bs-toggle="tab" data-bs-target="#unmute-unban" type="button" role="tab" aria-controls="unmute-unban" aria-selected="true" 
+                            style="color: #ffffff; background-color: #0f0f0f; border-color: #ff3333; border-bottom: none; font-weight: 600;">Unmute/Unban</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="timeout-tab" data-bs-toggle="tab" data-bs-target="#timeout" type="button" role="tab" aria-controls="timeout" aria-selected="false"
+                            style="color: #ffffff; background-color: #0f0f0f; border-color: #ff3333; border-bottom: none; font-weight: 600;">Timeout User</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="mute-tab" data-bs-toggle="tab" data-bs-target="#mute" type="button" role="tab" aria-controls="mute" aria-selected="false"
+                            style="color: #ffffff; background-color: #0f0f0f; border-color: #ff3333; border-bottom: none; font-weight: 600;">Mute User</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ban-tab" data-bs-toggle="tab" data-bs-target="#ban" type="button" role="tab" aria-controls="ban" aria-selected="false"
+                            style="color: #ffffff; background-color: #0f0f0f; border-color: #ff3333; border-bottom: none; font-weight: 600;">Ban User</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content pt-3" id="actionTabsContent">
+                <!-- Unmute/Unban Tab -->
+                <div class="tab-pane fade show active" id="unmute-unban" role="tabpanel" aria-labelledby="unmute-unban-tab">
+                    <form action="{{ url_for('moderation') }}" method="post" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="user_id" class="form-label" style="color: #ffffff; font-weight: 600;">Discord Username or ID</label>
+                            <input type="text" class="form-control" id="user_id" name="user_id" placeholder="Enter Discord Username or ID" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                            <div class="form-text" style="color: #cccccc;">Enter either the Discord Username or User ID of the user you want to moderate.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="action" class="form-label" style="color: #ffffff; font-weight: 600;">Action</label>
+                            <select class="form-select" id="action" name="action" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                                <option value="" selected disabled>Select an action</option>
+                                <option value="unmute">Unmute User</option>
+                                <option value="unban">Unban User</option>
+                                <option value="untimeout">Remove Timeout</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="unmute_guild_id" class="form-label" style="color: #ffffff; font-weight: 600;">Server</label>
+                            <select class="form-select" id="unmute_guild_id" name="guild_id" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                                <option value="" selected disabled>Select a server</option>
+                                {% for guild in guilds %}
+                                <option value="{{ guild.guild_id }}">{{ guild.guild_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="unmute_reason" class="form-label" style="color: #ffffff; font-weight: 600;">Reason (optional)</label>
+                            <input type="text" class="form-control" id="unmute_reason" name="reason" placeholder="Reason for action"
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600;">
+                                <i class="fas fa-check-circle"></i> Execute Action
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Timeout Tab -->
+                <div class="tab-pane fade" id="timeout" role="tabpanel" aria-labelledby="timeout-tab">
+                    <form action="{{ url_for('moderation') }}" method="post" class="row g-3">
+                        <input type="hidden" name="action" value="timeout">
+                        
+                        <div class="col-md-6">
+                            <label for="timeout_user_id" class="form-label" style="color: #ffffff; font-weight: 600;">Discord Username or ID</label>
+                            <input type="text" class="form-control" id="timeout_user_id" name="user_id" placeholder="Enter Discord Username or ID" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                            <div class="form-text" style="color: #cccccc;">Enter either the Discord Username or User ID of the user you want to timeout.</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="guild_id" class="form-label" style="color: #ffffff; font-weight: 600;">Server</label>
+                            <select class="form-select" id="guild_id" name="guild_id" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                                <option value="" selected disabled>Select a server</option>
+                                {% for guild in guilds %}
+                                <option value="{{ guild.guild_id }}">{{ guild.guild_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="duration" class="form-label" style="color: #ffffff; font-weight: 600;">Duration (days)</label>
+                            <input type="number" class="form-control" id="duration" name="duration" min="0.01" step="0.01" value="1" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                            <div class="form-text" style="color: #cccccc;">Enter the duration of the timeout in days (e.g., 1, 7, 14).</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="reason" class="form-label" style="color: #ffffff; font-weight: 600;">Reason (optional)</label>
+                            <input type="text" class="form-control" id="reason" name="reason" placeholder="Reason for timeout"
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-warning" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600;">
+                                <i class="fas fa-clock"></i> Apply Timeout
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Mute Tab -->
+                <div class="tab-pane fade" id="mute" role="tabpanel" aria-labelledby="mute-tab">
+                    <form action="{{ url_for('moderation') }}" method="post" class="row g-3">
+                        <input type="hidden" name="action" value="mute">
+                        
+                        <div class="col-md-6">
+                            <label for="mute_user_id" class="form-label" style="color: #ffffff; font-weight: 600;">Discord Username or ID</label>
+                            <input type="text" class="form-control" id="mute_user_id" name="user_id" placeholder="Enter Discord Username or ID" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                            <div class="form-text" style="color: #cccccc;">Enter either the Discord Username or User ID of the user you want to mute.</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="mute_guild_id" class="form-label" style="color: #ffffff; font-weight: 600;">Server</label>
+                            <select class="form-select" id="mute_guild_id" name="guild_id" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                                <option value="" selected disabled>Select a server</option>
+                                {% for guild in guilds %}
+                                <option value="{{ guild.guild_id }}">{{ guild.guild_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="mute_reason" class="form-label" style="color: #ffffff; font-weight: 600;">Reason (optional)</label>
+                            <input type="text" class="form-control" id="mute_reason" name="reason" placeholder="Reason for mute"
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-danger" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600;">
+                                <i class="fas fa-microphone-slash"></i> Mute User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Ban Tab -->
+                <div class="tab-pane fade" id="ban" role="tabpanel" aria-labelledby="ban-tab">
+                    <form action="{{ url_for('moderation') }}" method="post" class="row g-3">
+                        <input type="hidden" name="action" value="ban">
+                        
+                        <div class="col-md-6">
+                            <label for="ban_user_id" class="form-label" style="color: #ffffff; font-weight: 600;">Discord Username or ID</label>
+                            <input type="text" class="form-control" id="ban_user_id" name="user_id" placeholder="Enter Discord Username or ID" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                            <div class="form-text" style="color: #cccccc;">Enter either the Discord Username or User ID of the user you want to ban.</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="ban_guild_id" class="form-label" style="color: #ffffff; font-weight: 600;">Server</label>
+                            <select class="form-select" id="ban_guild_id" name="guild_id" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                                <option value="" selected disabled>Select a server</option>
+                                {% for guild in guilds %}
+                                <option value="{{ guild.guild_id }}">{{ guild.guild_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="ban_reason" class="form-label" style="color: #ffffff; font-weight: 600;">Reason (optional)</label>
+                            <input type="text" class="form-control" id="ban_reason" name="reason" placeholder="Reason for ban"
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-danger" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600;">
+                                <i class="fas fa-ban"></i> Ban User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Timeouts -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-clock" style="color: #ff3333; margin-right: 8px;"></i> Active Timeouts
+        </div>
+        <div class="card-body">
+            {% if timeouts %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="color: #ffffff;">
+                    <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                        <tr>
+                            <th style="color: #ffffff;">ID</th>
+                            <th style="color: #ffffff;">User</th>
+                            <th style="color: #ffffff;">Server</th>
+                            <th style="color: #ffffff;">Reason</th>
+                            <th style="color: #ffffff;">Timeout Until</th>
+                            <th style="color: #ffffff;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #ffffff;">
+                        {% for timeout in timeouts %}
+                        <tr style="border-color: rgba(255, 51, 51, 0.2);">
+                            <td style="color: #ffffff;">{{ timeout.id }}</td>
+                            <td style="color: #ffffff;">
+                                {{ timeout.username }}
+                                <br>
+                                <small style="color: #cccccc;">ID: {{ timeout.user_id }}</small>
+                            </td>
+                            <td style="color: #ffffff;">
+                                {{ timeout.guild_name }}
+                                <br>
+                                <small style="color: #cccccc;">ID: {{ timeout.guild_id }}</small>
+                            </td>
+                            <td style="color: #ffffff;">{{ timeout.reason or 'No reason provided' }}</td>
+                            <td style="color: #ffffff;">{{ timeout.timeout_until }}</td>
+                            <td style="color: #ffffff;">
+                                <form action="{{ url_for('remove_timeout', timeout_id=timeout.id) }}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-warning" style="background-color: #ffcc00; border-color: #ffcc00; color: #000000; font-weight: 600;">
+                                        <i class="fas fa-undo"></i> Remove Timeout
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No active timeouts found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Muted Users -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-microphone-slash" style="color: #ff3333; margin-right: 8px;"></i> Muted Users
+        </div>
+        <div class="card-body">
+            {% if mutes %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="color: #ffffff;">
+                    <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                        <tr>
+                            <th style="color: #ffffff;">ID</th>
+                            <th style="color: #ffffff;">User</th>
+                            <th style="color: #ffffff;">Server</th>
+                            <th style="color: #ffffff;">Reason</th>
+                            <th style="color: #ffffff;">Mute Date</th>
+                            <th style="color: #ffffff;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #ffffff;">
+                        {% for mute in mutes %}
+                        <tr style="border-color: rgba(255, 51, 51, 0.2);">
+                            <td style="color: #ffffff;">{{ mute.id }}</td>
+                            <td style="color: #ffffff;">
+                                {{ mute.username }}
+                                <br>
+                                <small style="color: #cccccc;">ID: {{ mute.user_id }}</small>
+                            </td>
+                            <td style="color: #ffffff;">
+                                {{ mute.guild_name }}
+                                <br>
+                                <small style="color: #cccccc;">ID: {{ mute.guild_id }}</small>
+                            </td>
+                            <td style="color: #ffffff;">{{ mute.reason or 'No reason provided' }}</td>
+                            <td style="color: #ffffff;">{{ mute.timestamp }}</td>
+                            <td style="color: #ffffff;">
+                                <form action="{{ url_for('remove_mute', mute_id=mute.id) }}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-warning" style="background-color: #ffcc00; border-color: #ffcc00; color: #000000; font-weight: 600;">
+                                        <i class="fas fa-undo"></i> Unmute User
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No muted users found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Banned Users -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-ban" style="color: #ff3333; margin-right: 8px;"></i> Banned Users
+        </div>
+        <div class="card-body">
+            {% if bans %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="color: #ffffff;">
+                    <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                        <tr>
+                            <th style="color: #ffffff;">ID</th>
+                            <th style="color: #ffffff;">User</th>
+                            <th style="color: #ffffff;">Server</th>
+                            <th style="color: #ffffff;">Reason</th>
+                            <th style="color: #ffffff;">Ban Date</th>
+                            <th style="color: #ffffff;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #ffffff;">
+                        {% for ban in bans %}
+                        <tr style="border-color: rgba(255, 51, 51, 0.2);">
+                            <td style="color: #ffffff;">{{ ban.id }}</td>
+                            <td style="color: #ffffff;">
+                                {{ ban.username }}
+                                <br>
+                                <small style="color: #cccccc;">ID: {{ ban.user_id }}</small>
+                            </td>
+                            <td style="color: #ffffff;">
+                                {{ ban.guild_name }}
+                                <br>
+                                <small style="color: #cccccc;">ID: {{ ban.guild_id }}</small>
+                            </td>
+                            <td style="color: #ffffff;">{{ ban.reason or 'No reason provided' }}</td>
+                            <td style="color: #ffffff;">{{ ban.timestamp }}</td>
+                            <td style="color: #ffffff;">
+                                <form action="{{ url_for('remove_ban', ban_id=ban.id) }}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-danger" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600;">
+                                        <i class="fas fa-undo"></i> Unban User
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No banned users found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

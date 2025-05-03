@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block title %}System Management - Silcas Bot{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4" style="color: #ffffff; font-weight: 700;"><i class="fas fa-cogs" style="color: #ff3333; margin-right: 10px;"></i> System Management</h1>
+    
+    <!-- Bot Status Card -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-robot" style="color: #ff3333; margin-right: 8px;"></i> Bot Status
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title" style="color: #ffffff;">Status</h5>
+                            <p class="card-text" style="color: {% if bot_status.connected %}#33ff33{% else %}#ff3333{% endif %}; font-size: 1.5rem; font-weight: 700;">
+                                {% if bot_status.connected %}Online{% else %}Offline{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title" style="color: #ffffff;">Bot Name</h5>
+                            <p class="card-text" style="color: #ffffff; font-size: 1.2rem; font-weight: 600;">
+                                {{ bot_status.username }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title" style="color: #ffffff;">Bot ID</h5>
+                            <p class="card-text" style="color: #ffffff; font-size: 1.2rem; font-weight: 600;">
+                                {{ bot_status.id }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title" style="color: #ffffff;">Connected Servers</h5>
+                            <p class="card-text" style="color: #ffffff; font-size: 1.5rem; font-weight: 700;">
+                                {{ bot_status.servers }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bot Actions Card -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-terminal" style="color: #ff3333; margin-right: 8px;"></i> Bot Actions
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #ffffff;">Refresh Bot</h5>
+                            <p class="card-text" style="color: #cccccc;">
+                                Vernieuw de bot om codewijzigingen toe te passen zonder opnieuw op te starten.
+                            </p>
+                            <form method="post" action="{{ url_for('system_management') }}" onsubmit="return confirm('Weet je zeker dat je de bot wilt vernieuwen?');">
+                                <input type="hidden" name="action" value="refresh_bot">
+                                <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600; width: 100%;">
+                                    <i class="fas fa-sync-alt"></i> Bot Vernieuwen
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #ffffff;">Bot Commando's</h5>
+                            <p class="card-text" style="color: #cccccc;">
+                                Belangrijke bot commando's:
+                            </p>
+                            <ul style="color: #ffffff;">
+                                <li><code>/refresh</code> - Vernieuw de bot (alleen voor admins)</li>
+                                <li><code>/ban @user [reden]</code> - Verban een gebruiker</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #ffffff;">Hulp</h5>
+                            <p class="card-text" style="color: #cccccc;">
+                                Als je wijzigingen hebt aangebracht aan de code, kun je de bot vernieuwen zonder deze volledig opnieuw te starten.
+                                <br><br>
+                                Dit werkt voor de meeste wijzigingen, maar voor sommige aanpassingen (zoals nieuwe event handlers) moet je de bot mogelijk volledig herstarten.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Management Card -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-database" style="color: #ff3333; margin-right: 8px;"></i> Data Management
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #ffffff;">URL Scan Data</h5>
+                            <p class="card-text" style="color: #cccccc;">
+                                Clear all URL scan data from the database. This action cannot be undone.
+                            </p>
+                            <form method="post" action="{{ url_for('settings') }}" onsubmit="return confirm('Are you sure you want to clear all URL scan data? This action cannot be undone.');">
+                                <input type="hidden" name="action" value="clear_url_scans">
+                                <button type="submit" class="btn btn-danger w-100" style="background-color: #ff3333; border-color: #ff3333;">
+                                    <i class="fas fa-trash-alt"></i> Clear URL Scans
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #ffffff;">Media Scan Data</h5>
+                            <p class="card-text" style="color: #cccccc;">
+                                Clear all media scan data from the database. This action cannot be undone.
+                            </p>
+                            <form method="post" action="{{ url_for('settings') }}" onsubmit="return confirm('Are you sure you want to clear all media scan data? This action cannot be undone.');">
+                                <input type="hidden" name="action" value="clear_media_scans">
+                                <button type="submit" class="btn btn-danger w-100" style="background-color: #ff3333; border-color: #ff3333;">
+                                    <i class="fas fa-trash-alt"></i> Clear Media Scans
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card" style="background-color: #151515; border: 2px solid #ff3333;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #ffffff;">Violation Data</h5>
+                            <p class="card-text" style="color: #cccccc;">
+                                Clear all violation data from the database. This action cannot be undone.
+                            </p>
+                            <form method="post" action="{{ url_for('settings') }}" onsubmit="return confirm('Are you sure you want to clear all violation data? This action cannot be undone.');">
+                                <input type="hidden" name="action" value="clear_violations">
+                                <button type="submit" class="btn btn-danger w-100" style="background-color: #ff3333; border-color: #ff3333;">
+                                    <i class="fas fa-trash-alt"></i> Clear Violations
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card" style="background-color: #151515; border: 2px solid #cc0000;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #ffffff;">Reset All Scan Data</h5>
+                            <p class="card-text" style="color: #cccccc;">
+                                Reset all scan data at once. This will clear all URL scans, media scans, and violations. This action cannot be undone.
+                            </p>
+                            <form method="post" action="{{ url_for('settings') }}" onsubmit="return confirm('⚠️ WARNING: You are about to delete ALL scan data! This includes URL scans, media scans, and violations. This action CANNOT be undone. Are you absolutely sure?');">
+                                <input type="hidden" name="action" value="clear_all_data">
+                                <button type="submit" class="btn btn-danger w-100" style="background-color: #cc0000; border-color: #cc0000;">
+                                    <i class="fas fa-exclamation-triangle"></i> Reset All Scan Data
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-filter" style="color: #ff3333; margin-right: 8px;"></i> Filter System Events
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{ url_for('system_management') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label for="event_type" class="form-label" style="color: #ffffff; font-weight: 600;">Event Type</label>
+                    <select class="form-select" id="event_type" name="event_type"
+                            style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        <option value="" {% if not filters.event_type %}selected{% endif %}>All Types</option>
+                        <option value="Bot Refresh" {% if filters.event_type == 'Bot Refresh' %}selected{% endif %}>Bot Refresh</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="from_date" class="form-label" style="color: #ffffff; font-weight: 600;">From Date</label>
+                    <input type="date" class="form-control" id="from_date" name="from_date" value="{{ filters.from_date or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-4">
+                    <label for="to_date" class="form-label" style="color: #ffffff; font-weight: 600;">To Date</label>
+                    <input type="date" class="form-control" id="to_date" name="to_date" value="{{ filters.to_date or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <a href="{{ url_for('system_management') }}" class="btn btn-secondary" style="background-color: #333333; border-color: #333333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-undo"></i> Reset Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- System Events Table -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-history me-1" style="color: #ff3333; margin-right: 8px;"></i>
+            System Event Log
+        </div>
+        <div class="card-body">
+            {% if events %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="color: #ffffff;">
+                    <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                        <tr>
+                            <th style="color: #ffffff;">ID</th>
+                            <th style="color: #ffffff;">Timestamp</th>
+                            <th style="color: #ffffff;">Event Type</th>
+                            <th style="color: #ffffff;">Username</th>
+                            <th style="color: #ffffff;">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #ffffff;">
+                        {% for event in events %}
+                        <tr style="border-color: rgba(255, 51, 51, 0.2);">
+                            <td style="color: #ffffff;">{{ event.id }}</td>
+                            <td style="color: #ffffff;">{{ event.timestamp }}</td>
+                            <td>
+                                <span class="badge" style="background-color: #ff3333; color: #ffffff;">{{ event.event_type }}</span>
+                            </td>
+                            <td style="color: #ffffff;">{{ event.username or 'System' }}</td>
+                            <td style="color: #ffffff;">{{ event.details or 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav aria-label="System events pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('system_management', page=page-1, event_type=filters.event_type, from_date=filters.from_date, to_date=filters.to_date) }}" aria-label="Previous"
+                           style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                    {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('system_management', page=p, event_type=filters.event_type, from_date=filters.from_date, to_date=filters.to_date) }}"
+                           style="background-color: {% if p == page %}#ff3333{% else %}#0f0f0f{% endif %}; 
+                                  color: #ffffff; 
+                                  border-color: #ff3333;">{{ p }}</a>
+                    </li>
+                    {% elif p == page - 3 or p == page + 3 %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">...</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('system_management', page=page+1, event_type=filters.event_type, from_date=filters.from_date, to_date=filters.to_date) }}" aria-label="Next"
+                           style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No system events found matching the current filters.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Media Scans - Silcas Bot{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4" style="color: #ffffff; font-weight: 700;"><i class="fas fa-image" style="color: #ff3333; margin-right: 10px;"></i> Media Scans</h1>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-filter" style="color: #ff3333; margin-right: 8px;"></i> Filter Media Scans
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{ url_for('media_scans') }}" class="row g-3">
+                <div class="col-md-2">
+                    <label for="user_id" class="form-label" style="color: #ffffff; font-weight: 600;">User ID</label>
+                    <input type="text" class="form-control" id="user_id" name="user_id" value="{{ filters.user_id or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-2">
+                    <label for="from_date" class="form-label" style="color: #ffffff; font-weight: 600;">From Date</label>
+                    <input type="date" class="form-control" id="from_date" name="from_date" value="{{ filters.from_date or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-2">
+                    <label for="to_date" class="form-label" style="color: #ffffff; font-weight: 600;">To Date</label>
+                    <input type="date" class="form-control" id="to_date" name="to_date" value="{{ filters.to_date or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-3">
+                    <label for="is_nsfw" class="form-label" style="color: #ffffff; font-weight: 600;">Media Status</label>
+                    <select class="form-select" id="is_nsfw" name="is_nsfw"
+                            style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        <option value="" {% if filters.is_nsfw is none %}selected{% endif %}>All Media</option>
+                        <option value="true" {% if filters.is_nsfw == True %}selected{% endif %}>NSFW Only</option>
+                        <option value="false" {% if filters.is_nsfw == False %}selected{% endif %}>Safe Only</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="content_type" class="form-label" style="color: #ffffff; font-weight: 600;">Content Type</label>
+                    <select class="form-select" id="content_type" name="content_type"
+                            style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        <option value="" {% if not filters.content_type %}selected{% endif %}>All Types</option>
+                        <option value="image" {% if filters.content_type == 'image' %}selected{% endif %}>Images Only</option>
+                        <option value="video" {% if filters.content_type == 'video' %}selected{% endif %}>Videos Only</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <a href="{{ url_for('media_scans') }}" class="btn btn-secondary" style="background-color: #333333; border-color: #333333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-undo"></i> Reset Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Safe Display Mode Info -->
+    {% if safe_display_mode %}
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-shield-alt" style="color: #ff3333; margin-right: 8px;"></i>
+            Safe Display Mode
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> 
+                <strong>Safe Display Mode is enabled.</strong> Media content is hidden behind buttons to prevent accidental viewing of potentially inappropriate content.
+                <div class="mt-2">
+                    <a href="{{ url_for('settings') }}" class="btn btn-sm btn-primary" style="background-color: #33b5ff; border-color: #33b5ff;">
+                        <i class="fas fa-cog"></i> Change in Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Media Scans Table -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-table me-1" style="color: #ff3333; margin-right: 8px;"></i>
+            Media Scan Results
+        </div>
+        <div class="card-body">
+            {% if scans %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="color: #ffffff;">
+                    <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                        <tr>
+                            <th style="color: #ffffff;">ID</th>
+                            <th style="color: #ffffff;">Timestamp</th>
+                            <th style="color: #ffffff;">Username</th>
+                            <th style="color: #ffffff;">IP</th>
+                            <th style="color: #ffffff;">Media</th>
+                            <th style="color: #ffffff;">Type</th>
+                            <th style="color: #ffffff;">Status</th>
+                            <th style="color: #ffffff;">Scan Result</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #ffffff;">
+                        {% for scan in scans %}
+                        <tr style="border-color: rgba(255, 51, 51, 0.2); background-color: {% if scan.is_nsfw %}rgba(255, 51, 51, 0.1){% else %}rgba(0, 204, 102, 0.1){% endif %};">
+                            <td style="color: #ffffff;">{{ scan.id }}</td>
+                            <td style="color: #ffffff;">{{ scan.timestamp }}</td>
+                            <td style="color: #ffffff;">{{ scan.username }}</td>
+                            <td style="color: #ffffff;">{{ scan.ip_like }}</td>
+                            <td style="color: #ffffff;">
+                                {% if safe_display_mode %}
+                                    {% if scan.is_nsfw %}
+                                        <button class="btn btn-danger btn-sm" onclick="window.open('{{ scan.media_url }}', '_blank')" style="width: 100%;">
+                                            <i class="fas fa-exclamation-triangle"></i> Toon Media (Mogelijk Ongepast)
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-primary btn-sm" onclick="window.open('{{ scan.media_url }}', '_blank')" style="width: 100%;">
+                                            <i class="fas fa-eye"></i> Toon Media
+                                        </button>
+                                    {% endif %}
+                                {% else %}
+                                    {% if scan.content_type == 'image' and not scan.is_nsfw %}
+                                    <a href="{{ scan.media_url }}" target="_blank" rel="noopener noreferrer">
+                                        <img src="{{ scan.media_url }}" alt="Media thumbnail" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ scan.media_url }}" target="_blank" rel="noopener noreferrer" class="text-truncate d-inline-block" style="max-width: 200px; color: #33b5ff;" title="{{ scan.media_url }}">
+                                        {{ scan.media_url }}
+                                    </a>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td style="color: #ffffff;">
+                                {% if scan.content_type == 'image' %}
+                                <span class="badge" style="background-color: #33b5ff; color: #ffffff;">Image</span>
+                                {% elif scan.content_type == 'video' %}
+                                <span class="badge" style="background-color: #3366ff; color: #ffffff;">Video</span>
+                                {% else %}
+                                <span class="badge" style="background-color: #555555; color: #ffffff;">{{ scan.content_type }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: #ffffff;">
+                                {% if scan.is_nsfw %}
+                                <span class="badge" style="background-color: #ff3333; color: #ffffff;">NSFW</span>
+                                {% else %}
+                                <span class="badge" style="background-color: #00cc66; color: #ffffff;">Safe</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: #ffffff;">{{ scan.scan_result }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav aria-label="Media scans pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('media_scans', page=page-1, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, is_nsfw=filters.is_nsfw, content_type=filters.content_type) }}" aria-label="Previous"
+                           style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                    {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('media_scans', page=p, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, is_nsfw=filters.is_nsfw, content_type=filters.content_type) }}"
+                           style="background-color: {% if p == page %}#ff3333{% else %}#0f0f0f{% endif %}; 
+                                  color: #ffffff; 
+                                  border-color: #ff3333;">{{ p }}</a>
+                    </li>
+                    {% elif p == page - 3 or p == page + 3 %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">...</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('media_scans', page=page+1, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, is_nsfw=filters.is_nsfw, content_type=filters.content_type) }}" aria-label="Next"
+                           style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No media scans found matching the current filters.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

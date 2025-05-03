@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - Silcas Bot{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4" style="color: #ffffff; font-weight: 700;"><i class="fas fa-cog" style="color: #ff3333; margin-right: 10px;"></i> Settings</h1>
+    
+    <!-- Change Password -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-key" style="color: #ff3333; margin-right: 8px;"></i> Change Password
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('settings') }}">
+                        <input type="hidden" name="action" value="change_password">
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label" style="color: #ffffff; font-weight: 600;">Current Password</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label" style="color: #ffffff; font-weight: 600;">New Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label" style="color: #ffffff; font-weight: 600;">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required
+                                   style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                            <i class="fas fa-save"></i> Change Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-info-circle" style="color: #ff3333; margin-right: 8px;"></i> Dashboard Information
+                </div>
+                <div class="card-body">
+                    <h5 style="color: #ffffff; font-weight: 600;">About This Dashboard</h5>
+                    <p style="color: #ffffff;">This dashboard provides monitoring and analytics for the Silcas Bot, which protects your Discord server from malicious content.</p>
+                    
+                    <h5 style="color: #ffffff; font-weight: 600;">Features</h5>
+                    <ul style="color: #ffffff;">
+                        <li>View all URL scans performed by the bot</li>
+                        <li>Track violations and malicious content</li>
+                        <li>Filter and search through logs</li>
+                        <li>View statistics and visualizations</li>
+                    </ul>
+                    
+                    <h5 style="color: #ffffff; font-weight: 600;">Security Tips</h5>
+                    <ul style="color: #ffffff;">
+                        <li>Change the default admin password immediately</li>
+                        <li>Use a strong, unique password</li>
+                        <li>Log out when you're done using the dashboard</li>
+                        <li>Don't share your login credentials</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Safe Mode Settings -->
+    {% if session.get('is_admin') %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-shield-alt" style="color: #ff3333; margin-right: 8px;"></i> Safe Mode Settings
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3" style="background-color: #151515; border: 1px solid #333;">
+                                <div class="card-body">
+                                    <h5 style="color: #ffffff; font-weight: 600;">Safe Mode Configuration</h5>
+                                    <p style="color: #cccccc;">Enable stricter filtering for media and URLs. Safe Mode applies more aggressive thresholds to detect potentially inappropriate content.</p>
+                                    
+                                    <form method="post" action="{{ url_for('settings') }}">
+                                        <input type="hidden" name="action" value="update_safe_mode">
+                                        
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="safe_mode_enabled" name="safe_mode_enabled" value="true" {% if safe_mode_enabled %}checked{% endif %} style="width: 3em; height: 1.5em;">
+                                            <label class="form-check-label" for="safe_mode_enabled" style="color: #ffffff; font-weight: 600; margin-left: 10px;">
+                                                Enable Safe Mode
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="safe_mode_threshold" class="form-label" style="color: #ffffff; font-weight: 600;">Safe Mode Strictness</label>
+                                            <select class="form-select" id="safe_mode_threshold" name="safe_mode_threshold" style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                                                <option value="low" {% if safe_mode_threshold == 'low' %}selected{% endif %}>Low - Only block obvious inappropriate content</option>
+                                                <option value="medium" {% if safe_mode_threshold == 'medium' %}selected{% endif %}>Medium - Balanced filtering (recommended)</option>
+                                                <option value="high" {% if safe_mode_threshold == 'high' %}selected{% endif %}>High - Aggressive filtering, may have false positives</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="safe_display_mode" name="safe_display_mode" value="true" {% if safe_display_mode %}checked{% endif %} style="width: 3em; height: 1.5em;">
+                                            <label class="form-check-label" for="safe_display_mode" style="color: #ffffff; font-weight: 600; margin-left: 10px;">
+                                                Enable Safe Display Mode
+                                            </label>
+                                            <div class="form-text" style="color: #cccccc; margin-left: 10px;">
+                                                Verbergt media en URLs in scanresultaten zodat ze niet direct zichtbaar of klikbaar zijn
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary w-100" style="background-color: #ff3333; border-color: #ff3333;">
+                                            <i class="fas fa-save"></i> Save Safe Mode Settings
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card" style="background-color: #151515; border: 1px solid #333;">
+                                <div class="card-body">
+                                    <h5 style="color: #ffffff; font-weight: 600;">About Safe Mode</h5>
+                                    <p style="color: #cccccc;">Safe Mode provides enhanced protection against inappropriate content.</p>
+                                    
+                                    <h6 style="color: #ffffff; font-weight: 600;">What Safe Mode Does:</h6>
+                                    <ul style="color: #cccccc;">
+                                        <li>Lowers the threshold for detecting NSFW media</li>
+                                        <li>Applies stricter URL filtering</li>
+                                        <li>Blocks more potentially unsafe content</li>
+                                        <li>Provides better protection for family-friendly servers</li>
+                                    </ul>
+                                    
+                                    <h6 style="color: #ffffff; font-weight: 600;">What Safe Display Mode Does:</h6>
+                                    <ul style="color: #cccccc;">
+                                        <li>Verbergt media en URLs in scanresultaten</li>
+                                        <li>Voorkomt dat gebruikers per ongeluk op ongepaste links klikken</li>
+                                        <li>Toont alleen een knop om de inhoud te bekijken</li>
+                                        <li>Ideaal voor servers met jonge gebruikers</li>
+                                    </ul>
+                                    
+                                    <h6 style="color: #ffffff; font-weight: 600;">Recommended Settings:</h6>
+                                    <ul style="color: #cccccc;">
+                                        <li><strong>General Servers:</strong> Safe Mode Off or Low</li>
+                                        <li><strong>Family-Friendly Servers:</strong> Medium + Safe Display Mode</li>
+                                        <li><strong>Servers with Young Users:</strong> High + Safe Display Mode</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-cogs" style="color: #ff3333; margin-right: 8px;"></i> System Actions
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3" style="background-color: #151515; border: 1px solid #333;">
+                                <div class="card-body">
+                                    <h5 style="color: #ffffff; font-weight: 600;">Data Management</h5>
+                                    <p style="color: #cccccc;">Clear scan data from the database. This action cannot be undone.</p>
+                                    
+                                    <div class="d-flex flex-column gap-2">
+                                        <form method="post" action="{{ url_for('settings') }}" onsubmit="return confirm('Are you sure you want to clear all URL scan data? This action cannot be undone.');">
+                                            <input type="hidden" name="action" value="clear_url_scans">
+                                            <button type="submit" class="btn btn-danger w-100 mb-2" style="background-color: #ff3333; border-color: #ff3333;">
+                                                <i class="fas fa-trash-alt"></i> Clear URL Scans
+                                            </button>
+                                        </form>
+                                        
+                                        <form method="post" action="{{ url_for('settings') }}" onsubmit="return confirm('Are you sure you want to clear all media scan data? This action cannot be undone.');">
+                                            <input type="hidden" name="action" value="clear_media_scans">
+                                            <button type="submit" class="btn btn-danger w-100 mb-2" style="background-color: #ff3333; border-color: #ff3333;">
+                                                <i class="fas fa-trash-alt"></i> Clear Media Scans
+                                            </button>
+                                        </form>
+                                        
+                                        <form method="post" action="{{ url_for('settings') }}" onsubmit="return confirm('Are you sure you want to clear all violation data? This action cannot be undone.');">
+                                            <input type="hidden" name="action" value="clear_violations">
+                                            <button type="submit" class="btn btn-danger w-100 mb-2" style="background-color: #ff3333; border-color: #ff3333;">
+                                                <i class="fas fa-trash-alt"></i> Clear Violations
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card" style="background-color: #151515; border: 1px solid #333;">
+                                <div class="card-body">
+                                    <h5 style="color: #ffffff; font-weight: 600;">System Reset</h5>
+                                    <p style="color: #cccccc;">Reset all scan data at once. This will clear all URL scans, media scans, and violations. This action cannot be undone.</p>
+                                    
+                                    <form method="post" action="{{ url_for('settings') }}" onsubmit="return confirm('⚠️ WARNING: You are about to delete ALL scan data! This includes URL scans, media scans, and violations. This action CANNOT be undone. Are you absolutely sure?');">
+                                        <input type="hidden" name="action" value="clear_all_data">
+                                        <button type="submit" class="btn btn-danger w-100" style="background-color: #cc0000; border-color: #cc0000;">
+                                            <i class="fas fa-exclamation-triangle"></i> Reset All Scan Data
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

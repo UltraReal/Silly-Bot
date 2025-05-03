@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - Silcas Bot{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4" style="color: #ffffff; font-weight: 700;"><i class="fas fa-users" style="color: #ff3333; margin-right: 10px;"></i> User Management</h1>
+    
+    <!-- Add User Card -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-user-plus" style="color: #ff3333; margin-right: 8px;"></i> Add New User
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('users') }}" class="row g-3">
+                <input type="hidden" name="action" value="add_user">
+                
+                <div class="col-md-4">
+                    <label for="username" class="form-label" style="color: #ffffff; font-weight: 600;">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="password" class="form-label" style="color: #ffffff; font-weight: 600;">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="confirm_password" class="form-label" style="color: #ffffff; font-weight: 600;">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="is_admin" name="is_admin" value="true" style="width: 3em; height: 1.5em;">
+                        <label class="form-check-label" for="is_admin" style="color: #ffffff; font-weight: 600; margin-left: 10px;">
+                            Grant Admin Privileges
+                        </label>
+                    </div>
+                    <div class="form-text" style="color: #cccccc; margin-left: 10px;">
+                        Admins can manage users and change system settings
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="role" class="form-label" style="color: #ffffff; font-weight: 600;">Role</label>
+                    <select class="form-select" id="role" name="role" required
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        <option value="user">User</option>
+                        <option value="helper">Helper</option>
+                        <option value="developer">Developer</option>
+                        <option value="owner">Owner</option>
+                    </select>
+                    <div class="form-text" style="color: #cccccc;">
+                        Role determines user's permissions and display in the dashboard
+                    </div>
+                </div>
+                
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-user-plus"></i> Add User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Users Table -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-table me-1" style="color: #ff3333; margin-right: 8px;"></i>
+            Existing Users
+        </div>
+        <div class="card-body">
+            {% if users %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="color: #ffffff;">
+                    <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                        <tr>
+                            <th style="color: #ffffff;">ID</th>
+                            <th style="color: #ffffff;">Username</th>
+                            <th style="color: #ffffff;">Admin</th>
+                            <th style="color: #ffffff;">Role</th>
+                            <th style="color: #ffffff;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #ffffff;">
+                        {% for user in users %}
+                        <tr style="border-color: rgba(255, 51, 51, 0.2); background-color: rgba(21, 21, 21, 0.7);">
+                            <td style="color: #ffffff;">{{ user.id }}</td>
+                            <td style="color: #ffffff;">{{ user.username }}</td>
+                            <td style="color: #ffffff;">
+                                {% if user.is_admin %}
+                                <span class="badge" style="background-color: #ff3333; color: #ffffff;">Admin</span>
+                                {% else %}
+                                <span class="badge" style="background-color: #555555; color: #ffffff;">No</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: #ffffff;">
+                                {% if user.role == 'owner' %}
+                                <span class="badge" style="background-color: #ff3333; color: #ffffff;">Owner</span>
+                                {% elif user.role == 'developer' %}
+                                <span class="badge" style="background-color: #3366ff; color: #ffffff;">Developer</span>
+                                {% elif user.role == 'helper' %}
+                                <span class="badge" style="background-color: #33cc33; color: #ffffff;">Helper</span>
+                                {% else %}
+                                <span class="badge" style="background-color: #555555; color: #ffffff;">User</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: #ffffff;">
+                                <!-- Change Username Button -->
+                                <button type="button" class="btn btn-sm" style="background-color: #333333; border-color: #333333; color: #ffffff;" 
+                                        onclick="showChangeUsernameModal('{{ user.id }}', '{{ user.username }}')">
+                                    <i class="fas fa-edit"></i> Username
+                                </button>
+                                
+                                <!-- Change Role Button -->
+                                <button type="button" class="btn btn-sm" style="background-color: #333333; border-color: #333333; color: #ffffff;" 
+                                        {% if session.username == user.username and session.role == 'owner' %}disabled{% endif %}
+                                        onclick="showChangeRoleModal('{{ user.id }}', '{{ user.role }}')">
+                                    <i class="fas fa-user-tag"></i> Role
+                                </button>
+                                
+                                <!-- Toggle Admin Form -->
+                                <form method="post" action="{{ url_for('users') }}" style="display: inline-block;">
+                                    <input type="hidden" name="action" value="toggle_admin">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="submit" class="btn btn-sm" style="background-color: #333333; border-color: #333333; color: #ffffff;" 
+                                            {% if session.username == user.username %}disabled{% endif %}>
+                                        {% if user.is_admin %}
+                                        <i class="fas fa-user"></i> Admin ✓
+                                        {% else %}
+                                        <i class="fas fa-user-shield"></i> Admin ✗
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                
+                                <!-- Delete User Form -->
+                                <form method="post" action="{{ url_for('users') }}" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                    <input type="hidden" name="action" value="delete_user">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff;" 
+                                            {% if session.username == user.username %}disabled{% endif %}>
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No users found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Password Validation Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form[action="{{ url_for("users") }}"][method="post"]');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            form.addEventListener('submit', function(event) {
+                if (password.value !== confirmPassword.value) {
+                    event.preventDefault();
+                    alert('Passwords do not match!');
+                }
+            });
+        });
+        
+        function showChangeUsernameModal(userId, currentUsername) {
+            document.getElementById('username_user_id').value = userId;
+            document.getElementById('current_username').value = currentUsername;
+            document.getElementById('new_username').value = currentUsername;
+            
+            const modal = new bootstrap.Modal(document.getElementById('changeUsernameModal'));
+            modal.show();
+        }
+        
+        function showChangeRoleModal(userId, currentRole) {
+            document.getElementById('role_user_id').value = userId;
+            
+            // Set the current role in the dropdown
+            const roleSelect = document.getElementById('new_role');
+            for (let i = 0; i < roleSelect.options.length; i++) {
+                if (roleSelect.options[i].value === currentRole) {
+                    roleSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('changeRoleModal'));
+            modal.show();
+        }
+    </script>
+</div>
+
+<!-- Change Username Modal -->
+<div class="modal fade" id="changeUsernameModal" tabindex="-1" aria-labelledby="changeUsernameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #1a1a1a; border: 1px solid #333333;">
+            <div class="modal-header" style="border-bottom: 1px solid #333333;">
+                <h5 class="modal-title" id="changeUsernameModalLabel" style="color: #ffffff;">Change Username</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('users') }}">
+                <input type="hidden" name="action" value="change_username">
+                <input type="hidden" name="user_id" id="username_user_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="current_username" class="form-label" style="color: #ffffff; font-weight: 600;">Current Username</label>
+                        <input type="text" class="form-control" id="current_username" readonly
+                               style="background-color: #0f0f0f; color: #aaaaaa; border: 1px solid #333333;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_username" class="form-label" style="color: #ffffff; font-weight: 600;">New Username</label>
+                        <input type="text" class="form-control" id="new_username" name="new_username" required
+                               style="background-color: #0f0f0f; color: #ffffff; border: 2px solid #ff3333;">
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #333333;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: #333333; border-color: #333333; color: #ffffff;">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Role Modal -->
+<div class="modal fade" id="changeRoleModal" tabindex="-1" aria-labelledby="changeRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #1a1a1a; border: 1px solid #333333;">
+            <div class="modal-header" style="border-bottom: 1px solid #333333;">
+                <h5 class="modal-title" id="changeRoleModalLabel" style="color: #ffffff;">Change User Role</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('users') }}">
+                <input type="hidden" name="action" value="change_role">
+                <input type="hidden" name="user_id" id="role_user_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="new_role" class="form-label" style="color: #ffffff; font-weight: 600;">Select Role</label>
+                        <select class="form-select" id="new_role" name="new_role" required
+                               style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                            <option value="user">User</option>
+                            <option value="helper">Helper</option>
+                            <option value="developer">Developer</option>
+                            <option value="owner">Owner</option>
+                        </select>
+                        <div class="form-text" style="color: #cccccc;">
+                            <ul>
+                                <li><strong>User:</strong> Basic dashboard access</li>
+                                <li><strong>Helper:</strong> Support staff with moderation access</li>
+                                <li><strong>Developer:</strong> Technical staff with system access</li>
+                                <li><strong>Owner:</strong> Full access to all features</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #333333;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: #333333; border-color: #333333; color: #ffffff;">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

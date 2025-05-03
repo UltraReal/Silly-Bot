@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+
+{% block title %}URL Scans - Silcas Bot{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4" style="color: #ffffff; font-weight: 700;"><i class="fas fa-link" style="color: #ff3333; margin-right: 10px;"></i> URL Scans</h1>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-filter" style="color: #ff3333; margin-right: 8px;"></i> Filter URL Scans
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{ url_for('url_scans') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="user_id" class="form-label" style="color: #ffffff; font-weight: 600;">User ID</label>
+                    <input type="text" class="form-control" id="user_id" name="user_id" value="{{ filters.user_id or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-3">
+                    <label for="from_date" class="form-label" style="color: #ffffff; font-weight: 600;">From Date</label>
+                    <input type="date" class="form-control" id="from_date" name="from_date" value="{{ filters.from_date or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-3">
+                    <label for="to_date" class="form-label" style="color: #ffffff; font-weight: 600;">To Date</label>
+                    <input type="date" class="form-control" id="to_date" name="to_date" value="{{ filters.to_date or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-3">
+                    <label for="is_malicious" class="form-label" style="color: #ffffff; font-weight: 600;">URL Status</label>
+                    <select class="form-select" id="is_malicious" name="is_malicious"
+                            style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        <option value="" {% if filters.is_malicious is none %}selected{% endif %}>All URLs</option>
+                        <option value="true" {% if filters.is_malicious == True %}selected{% endif %}>Malicious Only</option>
+                        <option value="false" {% if filters.is_malicious == False %}selected{% endif %}>Safe Only</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <a href="{{ url_for('url_scans') }}" class="btn btn-secondary" style="background-color: #333333; border-color: #333333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-undo"></i> Reset Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Safe Mode Toggle -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-shield-alt" style="color: #ff3333; margin-right: 8px;"></i>
+            Safe Mode Settings
+        </div>
+        <div class="card-body">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="safeMode" {% if safe_mode %}checked{% endif %}>
+                <label class="form-check-label" for="safeMode" style="color: #ffffff; font-weight: 600;">
+                    Safe Mode {{ 'Enabled' if safe_mode else 'Disabled' }}
+                </label>
+            </div>
+            <small class="text-muted" style="color: #aaaaaa !important;">
+                When Safe Mode is enabled, URLs are not directly clickable to prevent accidental clicks on potentially harmful links.
+            </small>
+            
+            {% if safe_display_mode %}
+            <div class="alert alert-info mt-3" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> 
+                <strong>Safe Display Mode is enabled in global settings.</strong> URLs will not be directly clickable regardless of the toggle above.
+                <div class="mt-2">
+                    <a href="{{ url_for('settings') }}" class="btn btn-sm btn-primary" style="background-color: #33b5ff; border-color: #33b5ff;">
+                        <i class="fas fa-cog"></i> Change in Settings
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- URL Scans Table -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-table me-1" style="color: #ff3333; margin-right: 8px;"></i>
+            URL Scan Results
+        </div>
+        <div class="card-body">
+            {% if scans %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="color: #ffffff;">
+                    <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                        <tr>
+                            <th style="color: #ffffff;">ID</th>
+                            <th style="color: #ffffff;">Timestamp</th>
+                            <th style="color: #ffffff;">Username</th>
+                            <th style="color: #ffffff;">IP</th>
+                            <th style="color: #ffffff;">URL</th>
+                            <th style="color: #ffffff;">Status</th>
+                            <th style="color: #ffffff;">Scan Result</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #ffffff;">
+                        {% for scan in scans %}
+                        <tr style="border-color: rgba(255, 51, 51, 0.2); background-color: {% if scan.is_malicious %}rgba(255, 51, 51, 0.1){% else %}rgba(0, 204, 102, 0.1){% endif %};">
+                            <td style="color: #ffffff;">{{ scan.id }}</td>
+                            <td style="color: #ffffff;">{{ scan.timestamp }}</td>
+                            <td style="color: #ffffff;">{{ scan.username }}</td>
+                            <td style="color: #ffffff;">{{ scan.ip_like }}</td>
+                            <td style="color: #ffffff;">
+                                <!-- Safe Mode: URL is not directly clickable -->
+                                <div class="safe-mode-url {% if safe_mode %}active{% endif %}">
+                                    <span class="text-truncate d-inline-block" style="max-width: 300px; color: {% if scan.is_malicious %}#ff6666{% else %}#33b5ff{% endif %};" title="{{ scan.url }}">
+                                        {{ scan.url }}
+                                    </span>
+                                    <div class="mt-1">
+                                        <button type="button" class="btn btn-sm view-url-btn" 
+                                                style="background-color: #333333; border-color: #333333; color: #ffffff; font-size: 0.7rem;"
+                                                data-bs-toggle="modal" data-bs-target="#urlModal" 
+                                                data-url="{{ scan.url }}" data-is-malicious="{{ scan.is_malicious }}">
+                                            <i class="fas fa-eye"></i> View URL
+                                        </button>
+                                        {% if not safe_mode %}
+                                        <a href="{{ scan.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-warning" 
+                                           style="background-color: {% if scan.is_malicious %}#ff3333{% else %}#33b5ff{% endif %}; border-color: {% if scan.is_malicious %}#ff3333{% else %}#33b5ff{% endif %}; color: #ffffff; font-size: 0.7rem;">
+                                            <i class="fas fa-external-link-alt"></i> Open
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: #ffffff;">
+                                {% if scan.is_malicious %}
+                                <span class="badge" style="background-color: #ff3333; color: #ffffff;">Malicious</span>
+                                {% else %}
+                                <span class="badge" style="background-color: #00cc66; color: #ffffff;">Safe</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: #ffffff;">{{ scan.scan_result }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav aria-label="URL scans pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('url_scans', page=page-1, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, is_malicious=filters.is_malicious) }}" aria-label="Previous"
+                           style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                    {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('url_scans', page=p, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, is_malicious=filters.is_malicious) }}"
+                           style="background-color: {% if p == page %}#ff3333{% else %}#0f0f0f{% endif %}; 
+                                  color: #ffffff; 
+                                  border-color: #ff3333;">{{ p }}</a>
+                    </li>
+                    {% elif p == page - 3 or p == page + 3 %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">...</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('url_scans', page=page+1, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, is_malicious=filters.is_malicious) }}" aria-label="Next"
+                           style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No URL scans found matching the current filters.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- URL Modal -->
+<div class="modal fade" id="urlModal" tabindex="-1" aria-labelledby="urlModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #1a1a1a; border: 1px solid #333333;">
+            <div class="modal-header" style="border-bottom: 1px solid #333333;">
+                <h5 class="modal-title" id="urlModalLabel" style="color: #ffffff;">URL Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert" id="urlWarning" role="alert" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> This URL was detected as potentially malicious!
+                </div>
+                <div class="mb-3">
+                    <label for="urlDisplay" class="form-label" style="color: #ffffff; font-weight: 600;">URL:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="urlDisplay" readonly style="background-color: #0f0f0f; color: #ffffff; border: 1px solid #333333;">
+                        <button class="btn btn-outline-secondary" type="button" id="copyUrl" style="border: 1px solid #333333; color: #ffffff;">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted" style="color: #aaaaaa !important;">
+                        This URL is displayed for informational purposes. Exercise caution before visiting.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #333333;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: #333333; border-color: #333333; color: #ffffff;">
+                    Close
+                </button>
+                <a href="#" target="_blank" rel="noopener noreferrer" id="openUrlBtn" class="btn btn-warning" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff;">
+                    <i class="fas fa-external-link-alt"></i> Open URL (At Your Own Risk)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Safe Mode Toggle and URL Modal -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Safe Mode Toggle
+        const safeModeToggle = document.getElementById('safeMode');
+        safeModeToggle.addEventListener('change', function() {
+            // Send AJAX request to update safe mode preference
+            fetch('/toggle_safe_mode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    safe_mode: this.checked
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.safe_display_mode) {
+                        // If Safe Display Mode is enabled globally, show a notification
+                        alert('Note: Safe Display Mode is enabled in global settings. URLs will remain protected regardless of this toggle.');
+                    }
+                    // Reload the page to apply the new setting
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // URL Modal
+        const urlModal = document.getElementById('urlModal');
+        urlModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const url = button.getAttribute('data-url');
+            const isMalicious = button.getAttribute('data-is-malicious') === 'True';
+            
+            const urlDisplay = document.getElementById('urlDisplay');
+            const urlWarning = document.getElementById('urlWarning');
+            const openUrlBtn = document.getElementById('openUrlBtn');
+            
+            urlDisplay.value = url;
+            openUrlBtn.href = url;
+            
+            if (isMalicious) {
+                urlWarning.style.display = 'block';
+                urlWarning.className = 'alert alert-danger';
+                openUrlBtn.className = 'btn btn-danger';
+                openUrlBtn.style.backgroundColor = '#ff3333';
+                openUrlBtn.style.borderColor = '#ff3333';
+            } else {
+                urlWarning.style.display = 'none';
+                openUrlBtn.className = 'btn btn-primary';
+                openUrlBtn.style.backgroundColor = '#33b5ff';
+                openUrlBtn.style.borderColor = '#33b5ff';
+            }
+        });
+
+        // Copy URL button
+        document.getElementById('copyUrl').addEventListener('click', function() {
+            const urlDisplay = document.getElementById('urlDisplay');
+            urlDisplay.select();
+            document.execCommand('copy');
+            
+            // Show a tooltip or some indication that the URL was copied
+            this.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-copy"></i>';
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}

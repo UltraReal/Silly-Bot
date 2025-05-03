@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Violations - Silcas Bot{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4" style="color: #ffffff; font-weight: 700;"><i class="fas fa-exclamation-triangle" style="color: #ff3333; margin-right: 10px;"></i> Violations</h1>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-filter" style="color: #ff3333; margin-right: 8px;"></i> Filter Violations
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{ url_for('violations') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="user_id" class="form-label" style="color: #ffffff; font-weight: 600;">User ID</label>
+                    <input type="text" class="form-control" id="user_id" name="user_id" value="{{ filters.user_id or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-3">
+                    <label for="from_date" class="form-label" style="color: #ffffff; font-weight: 600;">From Date</label>
+                    <input type="date" class="form-control" id="from_date" name="from_date" value="{{ filters.from_date or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-3">
+                    <label for="to_date" class="form-label" style="color: #ffffff; font-weight: 600;">To Date</label>
+                    <input type="date" class="form-control" id="to_date" name="to_date" value="{{ filters.to_date or '' }}"
+                           style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                </div>
+                <div class="col-md-3">
+                    <label for="violation_type" class="form-label" style="color: #ffffff; font-weight: 600;">Violation Type</label>
+                    <select class="form-select" id="violation_type" name="violation_type"
+                            style="background-color: #0f0f0f; border: 2px solid #ff3333; color: #ffffff;">
+                        <option value="" {% if not filters.violation_type %}selected{% endif %}>All Types</option>
+                        <option value="Stack Buffer Overflow" {% if filters.violation_type == 'Stack Buffer Overflow' %}selected{% endif %}>Stack Buffer Overflow</option>
+                        <option value="Malafide URL" {% if filters.violation_type == 'Malafide URL' %}selected{% endif %}>Malicious URL</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <a href="{{ url_for('violations') }}" class="btn btn-secondary" style="background-color: #333333; border-color: #333333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 5px;">
+                        <i class="fas fa-undo"></i> Reset Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Safe Display Mode Info -->
+    {% if safe_display_mode %}
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-shield-alt" style="color: #ff3333; margin-right: 8px;"></i>
+            Safe Display Mode
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> 
+                <strong>Safe Display Mode is enabled.</strong> Potentially harmful content is hidden behind buttons to prevent accidental viewing or clicking.
+                <div class="mt-2">
+                    <a href="{{ url_for('settings') }}" class="btn btn-sm btn-primary" style="background-color: #33b5ff; border-color: #33b5ff;">
+                        <i class="fas fa-cog"></i> Change in Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Violations Table -->
+    <div class="card mb-4">
+        <div class="card-header" style="color: #ffffff; font-weight: 600;">
+            <i class="fas fa-table me-1" style="color: #ff3333; margin-right: 8px;"></i>
+            Violation Records
+        </div>
+        <div class="card-body">
+            {% if violations %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="color: #ffffff;">
+                    <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                        <tr>
+                            <th style="color: #ffffff;">ID</th>
+                            <th style="color: #ffffff;">Timestamp</th>
+                            <th style="color: #ffffff;">Username</th>
+                            <th style="color: #ffffff;">IP</th>
+                            <th style="color: #ffffff;">Violation Type</th>
+                            <th style="color: #ffffff;">Content</th>
+                            <th style="color: #ffffff;">Scan Result</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #ffffff;">
+                        {% for violation in violations %}
+                        <tr style="border-color: rgba(255, 51, 51, 0.2);">
+                            <td style="color: #ffffff;">{{ violation.id }}</td>
+                            <td style="color: #ffffff;">{{ violation.timestamp }}</td>
+                            <td style="color: #ffffff;">{{ violation.username }}</td>
+                            <td style="color: #ffffff;">{{ violation.ip_like }}</td>
+                            <td>
+                                {% if violation.violation_type == 'Stack Buffer Overflow' %}
+                                <span class="badge" style="background-color: #ff3333; color: #ffffff;">Stack Buffer Overflow</span>
+                                {% elif violation.violation_type == 'Malafide URL' %}
+                                <span class="badge" style="background-color: #ffcc00; color: #000000;">Malicious URL</span>
+                                {% else %}
+                                <span class="badge" style="background-color: #555555; color: #ffffff;">{{ violation.violation_type }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: #ffffff;">
+                                {% if safe_display_mode and ('http://' in violation.content or 'https://' in violation.content) %}
+                                    <button class="btn btn-danger btn-sm" onclick="navigator.clipboard.writeText('{{ violation.content }}'); alert('Content copied to clipboard!');" style="margin-right: 5px;">
+                                        <i class="fas fa-copy"></i> Copy Content
+                                    </button>
+                                    <button class="btn btn-warning btn-sm" onclick="showViolationContent('{{ violation.content }}')">
+                                        <i class="fas fa-eye"></i> View Content
+                                    </button>
+                                {% else %}
+                                    <div class="text-truncate" style="max-width: 300px;" title="{{ violation.content }}">
+                                        {{ violation.content }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td style="color: #ffffff;">{{ violation.scan_result or 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav aria-label="Violations pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('violations', page=page-1, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, violation_type=filters.violation_type) }}" aria-label="Previous"
+                           style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                    {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('violations', page=p, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, violation_type=filters.violation_type) }}"
+                           style="background-color: {% if p == page %}#ff3333{% else %}#0f0f0f{% endif %}; 
+                                  color: #ffffff; 
+                                  border-color: #ff3333;">{{ p }}</a>
+                    </li>
+                    {% elif p == page - 3 or p == page + 3 %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">...</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('violations', page=page+1, user_id=filters.user_id, from_date=filters.from_date, to_date=filters.to_date, violation_type=filters.violation_type) }}" aria-label="Next"
+                           style="background-color: #0f0f0f; color: #ffffff; border-color: #ff3333;">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No violations found matching the current filters.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Violation Content Modal -->
+{% if safe_display_mode %}
+<div class="modal fade" id="violationContentModal" tabindex="-1" aria-labelledby="violationContentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #1a1a1a; border: 1px solid #333333;">
+            <div class="modal-header" style="border-bottom: 1px solid #333333;">
+                <h5 class="modal-title" id="violationContentModalLabel" style="color: #ffffff;">Violation Content</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert" style="background-color: #151515; color: #ffffff; border: 2px solid #ffcc00;">
+                    <i class="fas fa-exclamation-triangle" style="color: #ffcc00;"></i> <strong>Warning:</strong> This content may contain potentially harmful links or inappropriate material.
+                </div>
+                <div class="mb-3">
+                    <label for="violationContentDisplay" class="form-label" style="color: #ffffff; font-weight: 600;">Content:</label>
+                    <div class="input-group">
+                        <textarea class="form-control" id="violationContentDisplay" readonly style="background-color: #0f0f0f; color: #ffffff; border: 1px solid #333333; min-height: 100px;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #333333;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: #333333; border-color: #333333; color: #ffffff;">
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('violationContentDisplay').value); alert('Content copied to clipboard!');" style="background-color: #33b5ff; border-color: #33b5ff; color: #ffffff;">
+                    <i class="fas fa-copy"></i> Copy Content
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showViolationContent(content) {
+        const textarea = document.getElementById('violationContentDisplay');
+        textarea.value = content;
+        
+        const modal = new bootstrap.Modal(document.getElementById('violationContentModal'));
+        modal.show();
+    }
+</script>
+{% endif %}
+{% endblock %}

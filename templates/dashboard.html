@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Silcas Bot{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4" style="color: #ffffff; font-weight: 700;"><i class="fas fa-tachometer-alt" style="color: #ff3333; margin-right: 10px;"></i> Dashboard</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row">
+        <!-- URL Stats -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body stat-card">
+                    <i class="fas fa-link"></i>
+                    <div class="stat-value">{{ stats.total_url_scans }}</div>
+                    <div class="stat-label">Total URL Scans</div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('url_scans') }}">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-danger text-white mb-4">
+                <div class="card-body stat-card">
+                    <i class="fas fa-virus"></i>
+                    <div class="stat-value">{{ stats.malicious_url_count }}</div>
+                    <div class="stat-label">Malicious URLs</div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('url_scans', is_malicious='true') }}">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body stat-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <div class="stat-value">{{ stats.safe_url_count }}</div>
+                    <div class="stat-label">Safe URLs</div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('url_scans', is_malicious='false') }}">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body stat-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="stat-value">{{ stats.total_violations }}</div>
+                    <div class="stat-label">Total Violations</div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('violations') }}">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Media Stats Cards -->
+    <div class="row">
+        <div class="col-xl-4 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body stat-card">
+                    <i class="fas fa-image"></i>
+                    <div class="stat-value">{{ stats.total_media_scans }}</div>
+                    <div class="stat-label">Total Media Scans</div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('media_scans') }}">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card bg-danger text-white mb-4">
+                <div class="card-body stat-card">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="stat-value">{{ stats.nsfw_media_count }}</div>
+                    <div class="stat-label">NSFW Media</div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('media_scans', is_nsfw='true') }}">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="stat-value">{{ stats.safe_media_count }}</div>
+                    <div class="stat-label">Safe Media</div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('media_scans', is_nsfw='false') }}">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-chart-pie me-1" style="color: #ff3333; margin-right: 8px;"></i>
+                    URL Scan Results
+                </div>
+                <div class="card-body">
+                    {% if url_chart %}
+                    <img src="data:image/png;base64,{{ url_chart }}" class="img-fluid" alt="URL Scan Results Chart">
+                    {% else %}
+                    <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                        <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No URL scan data available
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-chart-pie me-1" style="color: #ff3333; margin-right: 8px;"></i>
+                    Media Scan Results
+                </div>
+                <div class="card-body">
+                    {% if media_chart %}
+                    <img src="data:image/png;base64,{{ media_chart }}" class="img-fluid" alt="Media Scan Results Chart">
+                    {% else %}
+                    <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                        <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No media scan data available
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-chart-bar me-1" style="color: #ff3333; margin-right: 8px;"></i>
+                    Violations by Type
+                </div>
+                <div class="card-body">
+                    {% if violation_chart %}
+                    <img src="data:image/png;base64,{{ violation_chart }}" class="img-fluid" alt="Violations by Type Chart">
+                    {% else %}
+                    <div class="alert alert-info" style="background-color: #151515; color: #ffffff; border: 2px solid #33b5ff; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 0 15px rgba(51, 181, 255, 0.2);">
+                        <i class="fas fa-info-circle" style="color: #33b5ff; margin-right: 10px;"></i> No violation data available
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-history me-1" style="color: #ff3333; margin-right: 8px;"></i>
+                    Recent Activity (Last 7 Days)
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-3" style="background-color: #151515; border: 2px solid #ff3333;">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: #ffffff; font-weight: 600;"><i class="fas fa-link" style="color: #ff3333; margin-right: 8px;"></i> URL Scans</h5>
+                                    <p class="card-text display-4 text-center" style="color: #ffffff;">{{ stats.recent_url_scans }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3" style="background-color: #151515; border: 2px solid #ff3333;">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: #ffffff; font-weight: 600;"><i class="fas fa-image" style="color: #ff3333; margin-right: 8px;"></i> Media Scans</h5>
+                                    <p class="card-text display-4 text-center" style="color: #ffffff;">{{ stats.recent_media_scans }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3" style="background-color: #151515; border: 2px solid #ff3333;">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: #ffffff; font-weight: 600;"><i class="fas fa-exclamation-triangle" style="color: #ff3333; margin-right: 8px;"></i> Violations</h5>
+                                    <p class="card-text display-4 text-center" style="color: #ffffff;">{{ stats.recent_violations }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Users with Malicious Content -->
+    <div class="row">
+        {% if stats.top_malicious_users %}
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-users me-1" style="color: #ff3333; margin-right: 8px;"></i>
+                    Top Users with Malicious URLs
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" style="color: #ffffff;">
+                            <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                                <tr>
+                                    <th style="color: #ffffff;">Username</th>
+                                    <th style="color: #ffffff;">Malicious URL Count</th>
+                                </tr>
+                            </thead>
+                            <tbody style="color: #ffffff;">
+                                {% for username, count in stats.top_malicious_users.items() %}
+                                <tr style="border-color: rgba(255, 51, 51, 0.2);">
+                                    <td style="color: #ffffff;">{{ username }}</td>
+                                    <td style="color: #ffffff;">{{ count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if stats.top_nsfw_users %}
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-users me-1" style="color: #ff3333; margin-right: 8px;"></i>
+                    Top Users with NSFW Media
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" style="color: #ffffff;">
+                            <thead style="background-color: #0f0f0f; border-bottom: 2px solid #ff3333;">
+                                <tr>
+                                    <th style="color: #ffffff;">Username</th>
+                                    <th style="color: #ffffff;">NSFW Media Count</th>
+                                </tr>
+                            </thead>
+                            <tbody style="color: #ffffff;">
+                                {% for username, count in stats.top_nsfw_users.items() %}
+                                <tr style="border-color: rgba(255, 51, 51, 0.2);">
+                                    <td style="color: #ffffff;">{{ username }}</td>
+                                    <td style="color: #ffffff;">{{ count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Media Types -->
+    {% if stats.media_by_type %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header" style="color: #ffffff; font-weight: 600;">
+                    <i class="fas fa-photo-video me-1" style="color: #ff3333; margin-right: 8px;"></i>
+                    Media by Type
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for type, count in stats.media_by_type.items() %}
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card mb-3" style="background-color: #151515; border: 2px solid #ff3333;">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title" style="color: #ffffff; font-weight: 600;">
+                                        {% if type == 'image' %}
+                                        <i class="fas fa-image" style="color: #33b5ff; margin-right: 8px;"></i>
+                                        {% elif type == 'video' %}
+                                        <i class="fas fa-video" style="color: #33b5ff; margin-right: 8px;"></i>
+                                        {% else %}
+                                        <i class="fas fa-file" style="color: #cccccc; margin-right: 8px;"></i>
+                                        {% endif %}
+                                        {{ type|capitalize }}
+                                    </h5>
+                                    <p class="card-text display-4" style="color: #ffffff;">{{ count }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

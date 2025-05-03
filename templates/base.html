@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Silcas Bot Dashboard{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            padding-top: 56px;
+            background-color: #0a0a0a; /* Slightly lighter black for better contrast */
+            color: #ffffff; /* White text */
+            font-size: 16px; /* Larger base font size */
+        }
+        .sidebar {
+            position: fixed;
+            top: 56px;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(255, 0, 0, .5), 0 0 10px rgba(255, 0, 0, 0.3); /* Stronger red shadow */
+            background-color: #0f0f0f; /* Slightly lighter black for sidebar */
+            color: white;
+            width: 260px; /* Slightly wider sidebar */
+        }
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        .sidebar .nav-link {
+            font-weight: 600; /* Bolder text */
+            color: rgba(255, 255, 255, .95); /* Brighter white text */
+            padding: 0.7rem 1.2rem; /* Larger padding */
+            margin-bottom: 5px; /* Space between items */
+            border-radius: 5px; /* Rounded corners */
+            transition: all 0.3s ease; /* Smooth transition */
+            font-size: 1.05rem; /* Slightly larger font */
+        }
+        .sidebar .nav-link:hover {
+            color: #ffffff; /* White text on hover */
+            background-color: rgba(255, 0, 0, .15); /* Slight red background on hover */
+            transform: translateX(5px); /* Slight movement on hover */
+        }
+        .sidebar .nav-link.active {
+            color: #ffffff; /* White text when active */
+            background-color: rgba(255, 0, 0, .25); /* Stronger red background */
+            border-left: 4px solid #ff3333; /* Red border on active */
+            font-weight: 700; /* Bolder when active */
+        }
+        .sidebar .nav-link i {
+            margin-right: 12px; /* More space after icon */
+            color: #ff3333; /* Brighter red icons */
+            font-size: 1.2rem; /* Larger icons */
+            width: 25px; /* Fixed width for alignment */
+            text-align: center; /* Center icons */
+        }
+        .main-content {
+            margin-left: 260px; /* Match sidebar width */
+            padding: 2.5rem; /* More padding */
+            background-color: #0a0a0a; /* Slightly lighter black background */
+        }
+        .card {
+            margin-bottom: 2rem; /* More space between cards */
+            box-shadow: 0 0.25rem 0.5rem rgba(255, 0, 0, 0.3), 0 0 15px rgba(255, 0, 0, 0.1); /* Stronger red shadow */
+            background-color: #151515; /* Slightly lighter dark gray background */
+            border: 2px solid #ff3333; /* Thicker, brighter red border */
+            border-radius: 8px; /* More rounded corners */
+            overflow: hidden; /* Keep content inside rounded corners */
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animation */
+        }
+        .card:hover {
+            transform: translateY(-5px); /* Slight lift on hover */
+            box-shadow: 0 0.5rem 1rem rgba(255, 0, 0, 0.4), 0 0 20px rgba(255, 0, 0, 0.2); /* Stronger shadow on hover */
+        }
+        .card-header {
+            background-color: #0f0f0f; /* Slightly lighter black background */
+            border-bottom: 2px solid #ff3333; /* Thicker red border */
+            color: #ffffff; /* White text */
+            padding: 1rem 1.25rem; /* More padding */
+            font-weight: 600; /* Bolder text */
+            font-size: 1.2rem; /* Larger font */
+        }
+        .stat-card {
+            text-align: center;
+            padding: 2rem; /* More padding */
+            background-color: #151515; /* Slightly lighter dark gray background */
+            border: 2px solid #ff3333; /* Thicker, brighter red border */
+            border-radius: 8px; /* Rounded corners */
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animation */
+            height: 100%; /* Full height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0.25rem 0.5rem rgba(255, 0, 0, 0.2); /* Red shadow */
+        }
+        .stat-card:hover {
+            transform: translateY(-5px); /* Slight lift on hover */
+            box-shadow: 0 0.5rem 1rem rgba(255, 0, 0, 0.3); /* Stronger shadow on hover */
+        }
+        .stat-card i {
+            font-size: 3rem; /* Larger icons */
+            margin-bottom: 1.25rem; /* More space below icon */
+            color: #ff3333; /* Brighter red icons */
+            background: linear-gradient(45deg, #ff3333, #ff6666); /* Gradient effect */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.5)); /* Glow effect */
+        }
+        .stat-card .stat-value {
+            font-size: 2.5rem; /* Larger value */
+            font-weight: bold;
+            color: #ffffff; /* White text */
+            margin-bottom: 0.5rem; /* Space below value */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); /* Glow effect */
+        }
+        .stat-card .stat-label {
+            font-size: 1.1rem; /* Larger label */
+            color: #ffffff; /* White text */
+            font-weight: 600; /* Bolder text */
+            text-transform: uppercase; /* Uppercase text */
+            letter-spacing: 1px; /* Spaced letters */
+        }
+        @media (max-width: 767.98px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Safe Mode Toggle Styles */
+        .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            margin-top: 0.25em;
+            vertical-align: top;
+            background-color: #333;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+            background-position: left center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            border: 1px solid #ff3333;
+            appearance: none;
+            border-radius: 2em;
+            transition: background-position .15s ease-in-out;
+        }
+        
+        .form-check-input:checked {
+            background-color: #ff3333;
+            border-color: #ff3333;
+            background-position: right center;
+        }
+        
+        .form-check-input:focus {
+            border-color: #ff3333;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(255, 51, 51, 0.25);
+        }
+        
+        /* Safe Mode URL Display */
+        .safe-mode-url.active .text-truncate {
+            cursor: default;
+            text-decoration: none;
+        }
+        
+        .safe-mode-url:not(.active) .text-truncate {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top" style="background-color: #0f0f0f; border-bottom: 3px solid #ff3333; box-shadow: 0 2px 10px rgba(255, 0, 0, 0.3); padding: 0.7rem 1rem;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}" style="color: #ffffff; font-weight: bold; font-size: 1.5rem; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);">
+                <i class="fas fa-robot" style="margin-right: 10px; color: #ff3333;"></i>Silcas Bot
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" style="border-color: #ff3333; padding: 0.5rem;">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <!-- Navbar items will be added by the sidebar -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('privacy') }}" style="color: #ffffff; font-weight: 600;">
+                            <i class="fas fa-shield-alt" style="color: #ff3333; margin-right: 5px;"></i> Privacy Beleid
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('terms') }}" style="color: #ffffff; font-weight: 600;">
+                            <i class="fas fa-gavel" style="color: #ff3333; margin-right: 5px;"></i> Gebruiksvoorwaarden
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    {% if session.get('user_id') %}
+                    <span class="navbar-text me-3" style="color: #ffffff; font-weight: 600; background-color: rgba(255, 51, 51, 0.1); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid rgba(255, 51, 51, 0.3);">
+                        {% if session.get('role') == 'owner' %}
+                        <i class="fas fa-crown" style="color: #ff3333; margin-right: 8px;"></i>
+                        {% elif session.get('role') == 'developer' %}
+                        <i class="fas fa-code" style="color: #3366ff; margin-right: 8px;"></i>
+                        {% elif session.get('role') == 'helper' %}
+                        <i class="fas fa-hands-helping" style="color: #33cc33; margin-right: 8px;"></i>
+                        {% elif session.get('is_admin') %}
+                        <i class="fas fa-user-shield" style="color: #ff3333; margin-right: 8px;"></i>
+                        {% else %}
+                        <i class="fas fa-user" style="color: #ff3333; margin-right: 8px;"></i>
+                        {% endif %}
+                        {{ session.get('username') }}
+                        {% if session.get('role') %}
+                        <span class="badge ms-2" style="background-color: {% if session.get('role') == 'owner' %}#ff3333{% elif session.get('role') == 'developer' %}#3366ff{% elif session.get('role') == 'helper' %}#33cc33{% else %}#555555{% endif %}; color: #ffffff; font-size: 0.7em;">
+                            {{ session.get('role')|capitalize }}
+                        </span>
+                        {% endif %}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger" style="background-color: #ff3333; border-color: #ff3333; color: #ffffff; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 20px; box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);">
+                        <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            {% if session.get('user_id') %}
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('url_scans') %}active{% endif %}" href="{{ url_for('url_scans') }}">
+                                <i class="fas fa-link"></i> URL Scans
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('media_scans') %}active{% endif %}" href="{{ url_for('media_scans') }}">
+                                <i class="fas fa-image"></i> Media Scans
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('violations') %}active{% endif %}" href="{{ url_for('violations') }}">
+                                <i class="fas fa-exclamation-triangle"></i> Violations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('moderation') %}active{% endif %}" href="{{ url_for('moderation') }}">
+                                <i class="fas fa-gavel"></i> Moderation
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('settings') %}active{% endif %}" href="{{ url_for('settings') }}">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                        </li>
+                        {% if session.get('is_admin') %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('system_management') %}active{% endif %}" href="{{ url_for('system_management') }}">
+                                <i class="fas fa-server"></i> System
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('users') %}active{% endif %}" href="{{ url_for('users') }}">
+                                <i class="fas fa-users"></i> Users
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="nav-item mt-4">
+                            <div class="nav-link-divider" style="height: 1px; background-color: rgba(255, 51, 51, 0.3); margin: 10px 0;"></div>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('privacy') %}active{% endif %}" href="{{ url_for('privacy') }}">
+                                <i class="fas fa-shield-alt"></i> Privacy Beleid
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('terms') %}active{% endif %}" href="{{ url_for('terms') }}">
+                                <i class="fas fa-gavel"></i> Gebruiksvoorwaarden
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            {% endif %}
+
+            <!-- Main content -->
+            <main class="{% if session.get('user_id') %}col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content{% else %}col-12{% endif %}">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show mt-4 mb-4" role="alert" 
+                                 style="background-color: #151515; color: {% if category == 'success' %}#00ff66{% elif category == 'danger' %}#ff3333{% elif category == 'warning' %}#ffcc00{% else %}#ffffff{% endif %}; border: 2px solid {% if category == 'success' %}#00ff66{% elif category == 'danger' %}#ff3333{% elif category == 'warning' %}#ffcc00{% else %}#ffffff{% endif %}; border-radius: 8px; padding: 1rem 1.25rem; font-weight: 500; font-size: 1.1rem; box-shadow: 0 0 15px rgba({% if category == 'success' %}0, 255, 102{% elif category == 'danger' %}255, 51, 51{% elif category == 'warning' %}255, 204, 0{% else %}255, 255, 255{% endif %}, 0.2);">
+                                <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}" 
+                                   style="margin-right: 10px; font-size: 1.2rem;"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" 
+                                        style="filter: invert(1) grayscale(100%) brightness(200%); opacity: 0.8;"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
