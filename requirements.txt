@@ -1,0 +1,8 @@
+discord.py==2.2.0        # Discord bot library
+Flask==2.2.2             # Web framework for the dashboard
+requests==2.28.1         # If you need to make HTTP requests from the dashboard
+gunicorn==20.1.0         # WSGI HTTP server for serving the Flask app
+aiohttp==3.8.1           # Async HTTP client/server (for non-blocking I/O)
+python-dotenv==0.21.0    # For managing environment variables securely
+psycopg2==2.9.3          # If you're using PostgreSQL for the database
+pymongo==4.3.3           # If you're using MongoDB for the database
